@@ -19,10 +19,10 @@ print_banner() {
   printf "      ███        ███    ███      ███      \n"
   printf "    ███          ███    ███      ███  ████\n"
   printf "  ███            ███    ██       ███    ██\n"
-  printf "  █████████      ███████         █████████\n"
+  printf "  █████████      ███████         █████████ FREE\n"
   printf "${NC}"
   printf "\n"
-  printf "${DIM}  Plataforma de Multiatendimento — Z-PRO${NC}\n"
+  printf "${DIM}  Plataforma de Multiatendimento — Z-PRO FREE${NC}\n"
   printf "${GREEN}${LINE}${NC}\n"
   # info de hardware
   local _cpu _cores _ram_total _ram_used _ram_free _disk_total _disk_used
@@ -38,8 +38,8 @@ print_banner() {
   printf "${DIM}  RAM : ${NC}${_ram_used} ${DIM}usado / ${NC}${_ram_free} ${DIM}livre / ${NC}${_ram_total} ${DIM}total${NC}\n"
   printf "${DIM}  Disco: ${NC}${_disk_used} ${DIM}usado / ${NC}${_disk_total} ${DIM}total${NC}\n"
   printf "${GREEN}${LINE}${NC}\n"
-  printf "${DIM}  © ZDG & ZPRO - https://zdg.com.br/${NC}\n"
-  printf "${DIM}  Compartilhar sem autorização é crime (Art. 184 CP).${NC}\n"
+  printf "${DIM}  https://github.com/Justosdev/Zpro-Free${NC}\n"
+  printf "${DIM}  Solução sob licença MIT${NC}\n"
   printf "${DIM}  Pressione ${YELLOW}Ctrl+C${NC}${DIM} para fechar o instalador.${NC}\n"
   printf "${GREEN}${DLINE}${NC}\n"
   printf "\n"

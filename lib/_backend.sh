@@ -9,7 +9,7 @@
 #######################################
 backend_db_create() {
   step_header "🗄️ " "Criando containers de infraestrutura" \
-    "Sobe 3 containers Docker essenciais para o funcionamento do ZPRO:"
+    "Sobe 3 containers Docker essenciais para o funcionamento do ZPRO Free:"
   printf "  ${DIM}• postgresql  — banco de dados relacional na porta 5433 (dados em /data)${NC}\n"
   printf "  ${DIM}• redis-zpro  — cache em memória na porta 6379 (filas, sessões, pub/sub)${NC}\n"
   printf "  ${DIM}• portainer   — interface de gerenciamento Docker nas portas 9000 e 9443${NC}\n\n"

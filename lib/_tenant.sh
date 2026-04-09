@@ -211,9 +211,9 @@ tenant_success() {
   printf "\n"
   printf "Firewall foi ativado, liberando acesso as portas 22, 443, 80 e 9000"
   printf "\n"
-  printf "${GREEN}FAQ: https://zpro.passaportezdg.com.br/${NC}"
+  printf "${GREEN}FAQ: https://github.com/Justosdev/Zpro-Free${NC}"
   printf "\n"
-  printf "${GREEN}Suporte: https://passaportezdg.tomticket.com/${NC}"
+  printf "${GREEN}Suporte: https://github.com/Justosdev/Zpro-Free${NC}"
   printf "\n"
   printf "${CYAN_LIGHT}";
   printf "${NC}";

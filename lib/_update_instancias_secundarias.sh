@@ -199,9 +199,9 @@ update_instances_success() {
 
   printf "${YELLOW} ⚠️  Caso o sistema apresente alguma instabilidade, verifique os retornos dos processos rolando a barra lateral para cima, em busca de possíveis incosistências ou restaure o seu backup...${NC}"
   printf "\n"
-  printf "${GREEN}FAQ: https://zpro.passaportezdg.com.br/${NC}"
+  printf "${GREEN}FAQ: https://github.com/Justosdev/Zpro-Free${NC}"
   printf "\n"
-  printf "${GREEN}Suporte: https://passaportezdg.tomticket.com/${NC}"
+  printf "${GREEN}Suporte: https://github.com/Justosdev/Zpro-Free${NC}"
   printf "\n"
   printf "${CYAN_LIGHT}";
   printf "${NC}";

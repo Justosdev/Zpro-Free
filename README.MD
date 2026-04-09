@@ -1,10 +1,13 @@
-# Sistema Zpro FREE
+# Zpro FREE System
 
-Para adicionar domínios ao sistema, basta configurar a variável `ADMIN_DOMAIN` no seu arquivo `.env`:
+To add domains to the system, simply configure the `ADMIN_DOMAIN` variable in your `.env` file:
 
 ```env
-ADMIN_DOMAIN=zpro.io,seudominio.com,outrodominio.net
-```
-
+ADMIN_DOMAIN=zpro.io,yourdomain.com,anotherdomain.net
 ---
-Obrigado Cosinha da Nasa por compartilhar. Nada se Cria tudo se Copia.
+
+यह मेरे ब्राज़ीलियाई दोस्तों की मदद के लिए साझा किया गया है — ज्ञान बाँटना गलत नहीं है।
+
+## License
+
+This project is licensed under the MIT License.

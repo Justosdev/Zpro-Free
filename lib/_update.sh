@@ -402,9 +402,9 @@ update_success() {
   printf "\n"
   printf "  • Frontend: ${frontend_url}"
   printf "\n\n"
-  printf "${GREEN}FAQ: https://zpro.passaportezdg.com.br/${NC}"
+  printf "${GREEN}FAQ: https://github.com/Justosdev/Zpro-Free${NC}"
   printf "\n"
-  printf "${GREEN}Suporte: https://passaportezdg.tomticket.com/${NC}"
+  printf "${GREEN}Suporte: https://github.com/Justosdev/Zpro-Free${NC}"
   printf "\n"
   printf "${CYAN_LIGHT}";
   printf "${NC}";
