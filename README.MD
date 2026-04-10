@@ -3,7 +3,12 @@
 To add domains to the system, simply configure the `ADMIN_DOMAIN` variable in your `.env` file:
 
 ```env
-ADMIN_DOMAIN=zpro.io,yourdomain.com,anotherdomain.net
+# Domínios licenciados — separe por vírgula, sem espaços
+LICENSE_DOMAINS=meudominio.com,app.meudominio.com
+
+# Opcional — UUID do license code que aparece nos logs
+LICENSE_CODE=12345678901234567890
+
 ---
 
 यह मेरे ब्राज़ीलियाई दोस्तों की मदद के लिए साझा किया गया है — ज्ञान बाँटना गलत नहीं है।
