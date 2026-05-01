@@ -1,0 +1,307 @@
+
+services:
+  # Traefik Reverse Proxy
+  # Usado apenas em servidores SEM nginx (servidor limpo).
+  # Se nginx já estiver na porta 80/443, use o instalador (opção Docker) que
+  # configura nginx como proxy e sobe os serviços sem Traefik.
+  traefik:
+    image: traefik:v2.11
+    container_name: zpro-traefik
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:81"
+      - "--entrypoints.websecure.address=:8443"
+      # HTTP challenge (Let's Encrypt HTTP-01 via porta 81)
+      # Requer que /.well-known/acme-challenge/ seja acessível na porta 80 pública.
+      # Se nginx ocupa a 80, adicione no vhost nginx:
+      #   location /.well-known/acme-challenge/ { proxy_pass http://127.0.0.1:81; }
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-comunidadezdg@gmail.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "81:81"      # HTTP (e ACME challenge)
+      - "8443:8443"  # HTTPS (porta alternativa para não conflitar com nginx na 443)
+      - "8080:8080"  # Dashboard do Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - zpro-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DASHBOARD_DOMAIN:-traefik.localhost}`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.service=api@internal"
+
+  # Banco de dados PostgreSQL 17
+  postgres:
+    image: postgres:17-alpine
+    container_name: zpro-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-QKe8CXR0O2TrUV7qubBjyl6eU571zEo3EJcilrTof6A}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "127.0.0.1:${DB_PORT:-7544}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command:
+      - "postgres"
+      # Conexões
+      - "-c"
+      - "max_connections=200"
+      # Memória
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "work_mem=4MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      # Processamento Paralelo
+      - "-c"
+      - "max_worker_processes=8"
+      - "-c"
+      - "max_parallel_workers=8"
+      - "-c"
+      - "max_parallel_workers_per_gather=4"
+      - "-c"
+      - "max_parallel_maintenance_workers=4"
+      - "-c"
+      - "parallel_tuple_cost=0.1"
+      - "-c"
+      - "parallel_setup_cost=1000.0"
+      - "-c"
+      - "min_parallel_table_scan_size=8MB"
+      - "-c"
+      - "min_parallel_index_scan_size=512kB"
+      # I/O
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "random_page_cost=1.1"
+      # WAL
+      - "-c"
+      - "wal_level=replica"
+      - "-c"
+      - "max_wal_size=4GB"
+      - "-c"
+      - "min_wal_size=1GB"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "checkpoint_timeout=15min"
+      # Commit Assíncrono
+      - "-c"
+      - "synchronous_commit=off"
+      # Estatísticas
+      - "-c"
+      - "default_statistics_target=100"
+      # Timezone
+      - "-c"
+      - "timezone=America/Sao_Paulo"
+      - "-c"
+      - "log_timezone=America/Sao_Paulo"
+    networks:
+      - zpro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    shm_size: 256mb
+
+  # Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        IMAGE_SOURCE: ${IMAGE_SOURCE:-https://zdg.dev.br/}
+    container_name: zpro-backend
+    environment:
+      # Ambiente
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 7563
+      PROXY_PORT: ${PROXY_PORT:-8443}
+
+      # URLs
+      BACKEND_URL: ${BACKEND_URL:-https://dockerapi.comunidadezdg.com.br}
+      FRONTEND_URL: ${FRONTEND_URL:-https://dockerapp.comunidadezdg.com.br}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:-zpro.io}
+
+      # frontendNovo (beta)
+      FRONTEND_URL_2: ${FRONTEND_URL_2:-}
+      SECURE_URL: ${SECURE_URL:-}
+
+      # Banco de dados
+      DB_DIALECT: ${DB_DIALECT:-postgres}
+      DB_PORT: 5432
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-QKe8CXR0O2TrUV7qubBjyl6eU571zEo3EJcilrTof6A}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-B2gsGGfyonNzxz3b92/ZHw9cM/BfOHoQejTfa9wyFbk=}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-5fWkXVhHq56lP6iGhBZfM2/edSb7fU1ZBNOfl0SKSc4=}
+
+      # Chrome
+      CHROME_BIN: ${CHROME_BIN:-/usr/bin/google-chrome-stable}
+
+      # Sleep intervals
+      MIN_SLEEP_BUSINESS_HOURS: ${MIN_SLEEP_BUSINESS_HOURS:-2500}
+      MAX_SLEEP_BUSINESS_HOURS: ${MAX_SLEEP_BUSINESS_HOURS:-5000}
+      MIN_SLEEP_AUTO_REPLY: ${MIN_SLEEP_AUTO_REPLY:-2500}
+      MAX_SLEEP_AUTO_REPLY: ${MAX_SLEEP_AUTO_REPLY:-5000}
+      MIN_SLEEP_INTERVAL: ${MIN_SLEEP_INTERVAL:-250}
+      MAX_SLEEP_INTERVAL: ${MAX_SLEEP_INTERVAL:-500}
+
+      # Limites
+      USER_LIMIT: ${USER_LIMIT:-99}
+      CONNECTIONS_LIMIT: ${CONNECTIONS_LIMIT:-99}
+
+      # Redis (opcional)
+      # IO_REDIS_SERVER: ${IO_REDIS_SERVER:-}
+      # IO_REDIS_PASSWORD: ${IO_REDIS_PASSWORD:-}
+      # IO_REDIS_PORT: ${IO_REDIS_PORT:-}
+      # IO_REDIS_DB_SESSION: ${IO_REDIS_DB_SESSION:-}
+
+    ports:
+      - "${BACKEND_PORT:-7563}:7563"
+    volumes:
+      - backend_public:/app/public
+      - backend_sessions:/app/sessions
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+      - backend_cache:/app/cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zpro-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${BACKEND_DOMAIN:-dockerapi.comunidadezdg.com.br}`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.service=backend"
+      - "traefik.http.services.backend.loadbalancer.server.port=7563"
+      - "traefik.http.routers.backend-secure.rule=Host(`${BACKEND_DOMAIN:-dockerapi.comunidadezdg.com.br}`)"
+      - "traefik.http.routers.backend-secure.entrypoints=websecure"
+      - "traefik.http.routers.backend-secure.service=backend-secure"
+      - "traefik.http.routers.backend-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend-secure.loadbalancer.server.port=7563"
+      - "traefik.http.routers.backend.middlewares=backend-redirect"
+      - "traefik.http.middlewares.backend-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.backend-redirect.redirectscheme.port=8443"
+      - "traefik.http.middlewares.backend-redirect.redirectscheme.permanent=true"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:7563', (r) => {process.exit(r.statusCode === 200 || r.statusCode === 404 ? 0 : 1)})\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend (Vue.js / Quasar)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        URL_API: ${BACKEND_URL:-https://dockerapi.comunidadezdg.com.br}
+        IMAGE_SOURCE: ${IMAGE_SOURCE:-https://zdg.dev.br/}
+    container_name: zpro-frontend
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      URL_API: ${URL_API:-https://dockerapi.comunidadezdg.com.br}
+    ports:
+      - "${FRONTEND_PORT:-7564}:4444"
+    depends_on:
+      - backend
+    networks:
+      - zpro-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${FRONTEND_DOMAIN:-dockerapp.comunidadezdg.com.br}`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.service=frontend"
+      - "traefik.http.services.frontend.loadbalancer.server.port=4444"
+      - "traefik.http.routers.frontend-secure.rule=Host(`${FRONTEND_DOMAIN:-dockerapp.comunidadezdg.com.br}`)"
+      - "traefik.http.routers.frontend-secure.entrypoints=websecure"
+      - "traefik.http.routers.frontend-secure.service=frontend-secure"
+      - "traefik.http.routers.frontend-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend-secure.loadbalancer.server.port=4444"
+      - "traefik.http.routers.frontend.middlewares=frontend-redirect"
+      - "traefik.http.middlewares.frontend-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.frontend-redirect.redirectscheme.port=8443"
+      - "traefik.http.middlewares.frontend-redirect.redirectscheme.permanent=true"
+
+  # frontendNovo (Next.js — Beta)
+  # ATENÇÃO: NEXT_PUBLIC_* são baked-in no build — ao mudar BACKEND_URL
+  # é necessário rebuild: docker compose up -d --build frontnovo
+  frontnovo:
+    build:
+      context: ./frontNovo
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${BACKEND_URL:-https://dockerapi.comunidadezdg.com.br}
+        NEXT_PUBLIC_DEFAULT_ENCRYPTION_KEY: ${FRONTNOVO_ENCRYPTION_KEY:-zpro-passaporte-2024-encryption-key}
+        NEXT_PUBLIC_INTERACTIVE_BAILEYS: ${NEXT_PUBLIC_INTERACTIVE_BAILEYS:-false}
+    container_name: zpro-frontnovo
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "${FRONTNOVO_PORT:-7565}:3000"
+    depends_on:
+      - backend
+    networks:
+      - zpro-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontnovo.rule=Host(`${FRONTNOVO_DOMAIN:-dockerapp2.comunidadezdg.com.br}`)"
+      - "traefik.http.routers.frontnovo.entrypoints=web"
+      - "traefik.http.routers.frontnovo.service=frontnovo"
+      - "traefik.http.services.frontnovo.loadbalancer.server.port=3000"
+      - "traefik.http.routers.frontnovo-secure.rule=Host(`${FRONTNOVO_DOMAIN:-dockerapp2.comunidadezdg.com.br}`)"
+      - "traefik.http.routers.frontnovo-secure.entrypoints=websecure"
+      - "traefik.http.routers.frontnovo-secure.service=frontnovo-secure"
+      - "traefik.http.routers.frontnovo-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontnovo-secure.loadbalancer.server.port=3000"
+      - "traefik.http.routers.frontnovo.middlewares=frontnovo-redirect"
+      - "traefik.http.middlewares.frontnovo-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.frontnovo-redirect.redirectscheme.port=8443"
+      - "traefik.http.middlewares.frontnovo-redirect.redirectscheme.permanent=true"
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_public:
+    driver: local
+  backend_sessions:
+    driver: local
+  backend_uploads:
+    driver: local
+  backend_logs:
+    driver: local
+  backend_cache:
+    driver: local
+  traefik_letsencrypt:
+    driver: local
+
+networks:
+  zpro-network:
+    driver: bridge
