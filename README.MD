@@ -1,8 +1,35 @@
 Send your donation in BTC — any amount is welcome to help us keep contributing.
 bc1q2u0mwzlgel3t99789p0n96msajzffx0nwswpja
 
+🚀 LANÇAMENTO OFICIAL | VERSÃO HOMOLOGADA V4.0.0 - 04/05/2026 - v3.1.5.4.16 - 04/05/2026
 
-New!!!!  
+Fim da fase Alpha. O ZPRO v4 está oficialmente liberado na versão homologada!
+
+⚡️ Pacote Completo v4.0.0 disponível para atualização
+
+🛑 AVISO IMPORTANTE:  faça um BACKUP COMPLETO antes de aplicar esta versão.
+
+🎉 Resumo das novidades:
+
+⚛️ Novo front end React Next.js - interface mais rápida e moderna
+🔗 Integrações nativas com Instagram, Facebook e WhatsApp API oficial - Oauth próprio do Zpro
+🤖 Copiloto de I.A - Resumos, sugestões de respostas, análises de sentimento...
+📱 Novos canais - Mercado Livre, Woocommerce, OLX, Tiktok, Youtube, Linkedin, Rocket.Chat
+📈 Rastreamento de conversões Pixel Meta e Google GA4
+🎧 Novos recursos de atendimento
+👤 Perfil personalizado de usuários
+🔌 Novos Endpoints API
+🎨 Personalizações
+☁️ Armazenamento externo (Storage AmazonS3, etc)
+⚡️ Autoinstalador melhorado
+💳 Novos gateways de pagamento (stripe, mercadopago, etc)
+🚀 Modo Cluster - Infraestrutura para escala com múltiplos núcleos de processamento
+📧 Integração com SMTP para envio e recebimento de email nos tickets
+✨ Recursos premium baileys / uazapi - botões, listas, etc
+
+Link Download Alpha 22 - https://transfer.it/t/FVLzqC4nxZ6B
+
+
 🔥 NOVO HOTFIX DISPONÍVEL | v3.1.5.4.15 - 30/04/2026
 Correção cumulativa da versão Homolog atual.
 ⚡️ Pacote frontNovo 4.0.0.alpha.21 disponível para testes
@@ -33,7 +60,7 @@ Correção cumulativa da versão Homolog atual.
 - botao para adicionar midias recebidas a galeria
 - diagnostico de conexao em sessoes e configurações (waba, ig e messenger oauth)
 
-Link Download - https://transfer.it/t/iIVFnb4RhD5L
+Link Download Alpha 21 - https://transfer.it/t/iIVFnb4RhD5L
 
 
 ```md
